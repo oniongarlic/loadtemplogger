@@ -6,7 +6,6 @@ int read_load(float *la1, float *la5, float *la15)
 {
 FILE *f;
 int r;
-float a,b,c;
 
 f=fopen("/proc/loadavg", "r");
 
@@ -54,9 +53,9 @@ while (1) {
 	temp=read_temp();
 	read_load(&a1, &a5, &a15);
 
-	printf("%d,%f,%.2f,%.2f,%.2f\n", t, temp, a1, a5, a15);
+	printf("%ld,%f,%.2f,%.2f,%.2f\n", t, temp, a1, a5, a15);
 
-	int r=fprintf(f, "%d,%.4f,%.2f,%.2f,%.2f\n", t, temp, a1, a5, a15);
+	int r=fprintf(f, "%ld,%.4f,%.2f,%.2f,%.2f\n", t, temp, a1, a5, a15);
 	if (r<0) {
 		perror("Failed to write to log file");
 		return;
