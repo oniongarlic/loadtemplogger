@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include <sys/sysinfo.h>
+
 #define FIRMWARE_THROTTLED "/sys/devices/platform/soc/soc:firmware/get_throttled"
 
 int read_int(const char *file)
@@ -18,6 +20,7 @@ fclose(f);
 return tmp;
 }
 
+#if 0
 int read_load(float *la1, float *la5, float *la15)
 {
 FILE *f;
@@ -31,6 +34,7 @@ fclose(f);
 
 return r;
 }
+#endif
 
 int read_throttled()
 {
@@ -54,37 +58,58 @@ t=(float)tmp/1000.0f;
 return t;
 }
 
-void log_temp_and_load(char *log)
+int log_temp_and_load(char *log)
 {
 FILE *f;
 time_t t;
 int tick=0;
+const float lr=1.f/(1 << SI_LOAD_SHIFT);
 
 f=fopen(log, "w");
 if (!f) {
 	perror("Failed to open log file for writing");
-	return;
+	return 1;
 }
 
-fprintf(f, "Tick,Time,Temp,LoadAvg1,LoadAvg5,LoadAvg15,Throttled\n");
+fprintf(f, "Tick,Time,Temp,LoadAvg1,LoadAvg5,LoadAvg15,Throttled,MemFree,MemUsed,SwapUsed\n");
 
 while (1) {
-	int th;
-	float temp,a1,a5,a15;
+	int th,sr;
+	float temp;
+	struct sysinfo info;
 
 	t=time(NULL);
 	temp=read_temp();
-	read_load(&a1, &a5, &a15);
 
 	// XXX: Check the bits
 	th=read_throttled();
 
-	printf("%d,%ld,%f,%.2f,%.2f,%.2f,%d\n", tick, t, temp, a1, a5, a15, th>0 ? 1 : 0);
+	sr=sysinfo(&info);
+	if (sr!=0) {
+		perror("sysinfo");
+		return 1;
+	}
 
-	int r=fprintf(f, "%d,%ld,%.4f,%.2f,%.2f,%.2f,%d\n", tick, t, temp, a1, a5, a15, th>0 ? 1 : 0);
+	printf("%d,%ld,%f,%.2f,%.2f,%.2f,%d,%ld,%ld,%ld\n",
+		tick, t,
+		temp,
+		info.loads[0]*lr, info.loads[1]*lr, info.loads[2]*lr,
+		th>0 ? 1 : 0,
+		info.freeram*info.mem_unit,
+		(info.totalram-info.freeram)*info.mem_unit,
+		(info.totalswap-info.freeswap)*info.mem_unit);
+
+	int r=fprintf(f, "%d,%ld,%.4f,%.2f,%.2f,%.2f,%d,%ld,%ld,%ld\n",
+		tick, t, temp,
+		info.loads[0]*lr, info.loads[1]*lr, info.loads[2]*lr,
+		th>0 ? 1 : 0,
+		info.freeram*info.mem_unit,
+		(info.totalram-info.freeram)*info.mem_unit,
+		(info.totalswap-info.freeswap)*info.mem_unit);
+
 	if (r<0) {
 		perror("Failed to write to log file");
-		return;
+		return 1;
 	}
 	fflush(f);
 
@@ -94,14 +119,14 @@ while (1) {
 }
 
 fclose(f);
+
+return 0;
 }
 
 int main(int argc, char **argv)
 {
 if (argc==1)
-	return 1;
+	return 2;
 
-log_temp_and_load(argv[1]);
-
-return 0;
+return log_temp_and_load(argv[1]);
 }
