@@ -77,6 +77,7 @@ while (1) {
 	int th,sr;
 	float temp;
 	struct sysinfo info;
+	unsigned long mf,mu,su;
 
 	t=time(NULL);
 	temp=read_temp();
@@ -90,22 +91,22 @@ while (1) {
 		return 1;
 	}
 
-	printf("%d,%ld,%f,%.2f,%.2f,%.2f,%d,%ld,%ld,%ld\n",
+	mf=info.freeram*info.mem_unit;
+	mu=(info.totalram-info.freeram)*info.mem_unit;
+	su=(info.totalswap-info.freeswap)*info.mem_unit;
+
+	printf("%d,%ld,%f,%.2f,%.2f,%.2f,%d,%lu,%lu,%lu\n",
 		tick, t,
 		temp,
 		info.loads[0]*lr, info.loads[1]*lr, info.loads[2]*lr,
 		th>0 ? 1 : 0,
-		info.freeram*info.mem_unit,
-		(info.totalram-info.freeram)*info.mem_unit,
-		(info.totalswap-info.freeswap)*info.mem_unit);
+		mf, mu,	su);
 
-	int r=fprintf(f, "%d,%ld,%.4f,%.2f,%.2f,%.2f,%d,%ld,%ld,%ld\n",
+	int r=fprintf(f, "%d,%ld,%.4f,%.2f,%.2f,%.2f,%d,%lu,%lu,%lu\n",
 		tick, t, temp,
 		info.loads[0]*lr, info.loads[1]*lr, info.loads[2]*lr,
 		th>0 ? 1 : 0,
-		info.freeram*info.mem_unit,
-		(info.totalram-info.freeram)*info.mem_unit,
-		(info.totalswap-info.freeswap)*info.mem_unit);
+		mf, mu,	su);
 
 	if (r<0) {
 		perror("Failed to write to log file");
