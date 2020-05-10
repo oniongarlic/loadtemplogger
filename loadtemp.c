@@ -4,7 +4,8 @@
 
 #include <sys/sysinfo.h>
 
-#define FIRMWARE_THROTTLED "/sys/devices/platform/soc/soc:firmware/get_throttled"
+// #define FIRMWARE_THROTTLED "/sys/devices/platform/soc/soc:firmware/get_throttled"
+#define FIRMWARE_THROTTLED "/sys/class/hwmon/hwmon0/in0_lcrit_alarm"
 
 int read_int(const char *file)
 {
