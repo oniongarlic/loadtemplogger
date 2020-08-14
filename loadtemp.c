@@ -4,8 +4,8 @@
 
 #include <sys/sysinfo.h>
 
-// #define FIRMWARE_THROTTLED "/sys/devices/platform/soc/soc:firmware/get_throttled"
-#define FIRMWARE_THROTTLED "/sys/class/hwmon/hwmon0/in0_lcrit_alarm"
+#define HWMON_TEMP	"/sys/class/hwmon/hwmon0/temp1_input"
+#define HWMON_THROTTLED	"/sys/class/hwmon/hwmon1/in0_lcrit_alarm"
 
 int read_int(const char *file)
 {
@@ -39,7 +39,7 @@ return r;
 
 int read_throttled()
 {
-return read_int(FIRMWARE_THROTTLED);
+return read_int(HWMON_THROTTLED);
 }
 
 float read_temp()
@@ -48,7 +48,7 @@ int r,tmp;
 float t;
 FILE *f;
 
-f=fopen("/sys/devices/virtual/thermal/thermal_zone0/temp", "r");
+f=fopen(HWMON_TEMP, "r");
 r=fscanf(f, "%d", &tmp);
 if (r==0)
 	return -1.0f;
