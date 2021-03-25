@@ -23,7 +23,7 @@ isec=isec % 60;
 fprintf(stream, "%02d:%02d:%02d,%03d", hours, minutes, isec, fraction);
 }
 
-int read_int(const char *file)
+static int read_int(const char *file)
 {
 FILE *f;
 int r,tmp;
@@ -42,7 +42,7 @@ int read_throttled()
 return read_int(HWMON_THROTTLED);
 }
 
-float read_temp()
+static float read_temp()
 {
 int r,tmp;
 float t;
@@ -59,7 +59,7 @@ t=(float)tmp/1000.0f;
 return t;
 }
 
-int log_temp_and_load(const char *log, const char *str)
+static int log_temp_and_load(const char *log, const char *str)
 {
 FILE *f, *s=NULL;
 time_t t;
