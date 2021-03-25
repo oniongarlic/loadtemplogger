@@ -37,22 +37,6 @@ fclose(f);
 return tmp;
 }
 
-#if 0
-int read_load(float *la1, float *la5, float *la15)
-{
-FILE *f;
-int r;
-
-f=fopen("/proc/loadavg", "r");
-
-r=fscanf(f, "%f %f %f", la1, la5, la15);
-
-fclose(f);
-
-return r;
-}
-#endif
-
 int read_throttled()
 {
 return read_int(HWMON_THROTTLED);
