@@ -1,9 +1,11 @@
 CC=gcc
 CFLAGS=-O2 -pipe -Wall
+LIBS=-lm
 
 all: loadtemp
 
-loadtemp: loadtemp.o
+%: %.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
 
 clean:
 	-rm *.o loadtemp
